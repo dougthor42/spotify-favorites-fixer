@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict
 from typing import List
-from typing import Tuple
 
 import click
 import loguru
@@ -118,8 +117,9 @@ class Album:
 
 
 @dataclass
-class Artist:
-    pass
+class AddedTrack:
+    track: Track
+    album: Album
 
 
 def get_all_saved_albums(sp: spotipy.Spotipy) -> List[Album]:
@@ -164,7 +164,7 @@ def main(dry_run: bool = True) -> None:
     scope = "user-library-read"
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
 
-    added_tracks: List[Tuple[Track, Album]] = []
+    added_tracks: List[AddedTrack] = []
 
     albums = get_all_saved_albums(sp)
 
@@ -179,15 +179,16 @@ def main(dry_run: bool = True) -> None:
             itertools.compress(tracks, (not liked for liked in already_liked))
         )
 
-        if need_to_add:
-            logger.info(
-                f"Adding {len(need_to_add)} tracks from {album} to saved"
-                f" tracks: {need_to_add}"
-            )
-        else:
+        if not need_to_add:
             logger.trace(f"All tracks from {album} are already 'liked'.")
+            continue
 
-        added_tracks.extend([(track, album) for track in need_to_add])
+        logger.info(
+            f"Adding {len(need_to_add)} tracks from {album} to saved"
+            f" tracks: {need_to_add}"
+        )
+        added_tracks.extend([AddedTrack(track, album) for track in need_to_add])
+
         if not dry_run:
             sp.curren_user_saved_tracks_add([t.uri for t in need_to_add])
 

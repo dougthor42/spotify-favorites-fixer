@@ -118,7 +118,7 @@ class Artist:
 
 
 def get_all_saved_albums(sp: spotipy.Spotipy) -> List[Album]:
-    offset = 400
+    offset = 0
     limit = 10
 
     logger.debug("Getting all saved albums.")

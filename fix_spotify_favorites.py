@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import urllib.parse
 from dataclasses import dataclass
 from typing import Dict
 from typing import List
@@ -113,6 +114,41 @@ class Album:
 @dataclass
 class Artist:
     pass
+
+
+def get_all_saved_albums(sp: spotipy.Spotipy) -> List[Album]:
+    offset = 400
+    limit = 10
+
+    logger.debug("Getting all saved albums.")
+    logger.trace(f"Getting first {limit} albums.")
+    results = sp.current_user_saved_albums(limit=limit, offset=offset)
+    expected_total = results["total"]
+    _albums = results["items"]
+
+    while results["next"]:
+
+        # Most of this is just for logging. /shrug
+        # if results["next"]:
+        _query = urllib.parse.urlparse(results["next"]).query
+        new_offset = int(urllib.parse.parse_qs(_query)["offset"][0])
+
+        logger.trace(
+            f"Getting next {limit} albums"
+            f" (offset: {new_offset}, total: {expected_total})"
+        )
+        results = sp.next(results)
+        _albums.extend(results["items"])
+
+    albums = [Album.from_result(album["album"]) for album in _albums]
+
+    actual_total = len(albums)
+    if expected_total != len(albums):
+        raise ValueError(
+            f"Retrived total {actual_total} does not match expected {expected_total}"
+        )
+    logger.debug(f"Found {actual_total} saved albums")
+    return albums
 
 
 def main(dry_run: bool = False) -> None:

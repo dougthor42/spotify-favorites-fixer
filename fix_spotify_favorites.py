@@ -84,10 +84,11 @@ class Album:
     href: str
     release_date: str
     release_date_precision: str
+    artist_name: str
     tracks: List[Track]
 
     def __str__(self):
-        return f"Album('{self.name}')"
+        return f"Album({self.artist_name}: '{self.name}')"
 
     def __repr__(self):
         return str(self)
@@ -104,6 +105,7 @@ class Album:
             href=data["href"],
             release_date=data["release_date"],
             release_date_precision=data["release_date_precision"],
+            artist_name=",".join(art["name"] for art in data["artists"]),
             tracks=tracks,
         )
 

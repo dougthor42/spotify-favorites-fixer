@@ -1,17 +1,48 @@
 from __future__ import annotations
 
-import logging
+import sys
 from dataclasses import dataclass
 from typing import Dict
 from typing import List
 from typing import Optional
 
+import click
+import loguru
 import spotipy
+from loguru import logger
 from spotipy.oauth2 import SpotifyOAuth
 
 track_blocklist: List[str] = []
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
+
+
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.option("-n", "--dry-run", is_flag=True, help="Do not update 'Liked' songs.")
+@click.option(
+    "-v",
+    "--verbose",
+    count=True,
+    help="Increase printed messages. Can be provided multiple times.",
+)
+def cli(verbose: int, dry_run: bool):
+    setup_logging(logger, verbose)
+    main(dry_run=dry_run)
+
+
+def setup_logging(logger: loguru.Logger, verbose: int):
+    levels = {
+        0: "WARNING",
+        1: "INFO",
+        2: "DEBUG",
+        3: "TRACE",
+    }
+    if verbose > 3:
+        verbose = 3
+    if verbose < 0:
+        verbose = 0
+
+    logger.remove()
+    logger.add(sys.stderr, level=levels[verbose])
+    logger.info(f"Verbosity set to {verbose} ({levels[verbose]}).")
 
 
 # Some helper classes to make accessors easier.
@@ -90,7 +121,7 @@ class Artist:
     pass
 
 
-def main():
+def main(dry_run: bool = False) -> None:
     # Create our client
     scope = "user-library-read"
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
@@ -130,4 +161,4 @@ def _example():
 
 
 if __name__ == "__main__":
-    _example()
+    cli()

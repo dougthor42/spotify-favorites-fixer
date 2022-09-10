@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime as dt
 import sys
 import urllib.parse
 from dataclasses import dataclass
@@ -153,6 +154,7 @@ def get_all_saved_albums(sp: spotipy.Spotipy) -> List[Album]:
 
 
 def main(dry_run: bool = True) -> None:
+    start_time = dt.datetime.utcnow()
     # Create our client
     scope = "user-library-read"
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
@@ -176,8 +178,11 @@ def main(dry_run: bool = True) -> None:
                     if not dry_run:
                         sp.current_user_saved_tracks_add(track)
 
+    end_time = dt.datetime.utcnow()
+    duration = end_time - start_time
     num_added = len(added_tracks)
     logger.info(f"Added {num_added} tracks to saved tracks. Yay! 🎉")
+    logger.info(f"Took {duration} to run.")
     if dry_run:
         logger.warning("Dry Run: no tracks added.")
 

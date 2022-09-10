@@ -151,27 +151,25 @@ def get_all_saved_albums(sp: spotipy.Spotipy) -> List[Album]:
     return albums
 
 
-def main(dry_run: bool = False) -> None:
+def main(dry_run: bool = True) -> None:
     # Create our client
     scope = "user-library-read"
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
 
-    album_results = sp.current_user_saved_albums(limit=20, offset=0)
+    albums = get_all_saved_albums(sp)
 
-    while album_results["next"]:
-        albums = album_results["items"]
+    for album in albums:
+        logger.trace(f"Processing {album}")
 
-        for _album in albums:
-            album = Album.from_result(_album["album"])
+        for track in album.tracks:
 
-            for track in album.tracks:
+            # only checking 1 track at a time.
+            if not sp.current_user_saved_tracks_contains([track.uri])[0]:
+                if track.uri not in track_blocklist:
 
-                # only checking 1 track at a time.
-                if not sp.current_user_saved_tracks_contains([track.uri])[0]:
-                    if track.uri not in track_blocklist:
-
-                        logger.info(f"Adding {album}::{track} to saved tracks.")
-                        #  sp.current_user_saved_tracks_add(track)
+                    logger.info(f"Adding {track} from {album} to saved tracks.")
+                    if not dry_run:
+                        sp.current_user_saved_tracks_add(track)
 
 
 def _example():

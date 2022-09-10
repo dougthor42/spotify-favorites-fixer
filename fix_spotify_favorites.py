@@ -157,6 +157,7 @@ def get_all_saved_albums(sp: spotipy.Spotipy) -> List[Album]:
 
 
 def main(dry_run: bool = True) -> None:
+    logger.success(f"Starting. {dry_run=}")
     start_time = dt.datetime.utcnow()
     # Create our client
     scope = "user-library-read"
@@ -184,7 +185,7 @@ def main(dry_run: bool = True) -> None:
     end_time = dt.datetime.utcnow()
     duration = end_time - start_time
     num_added = len(added_tracks)
-    logger.info(f"Added {num_added} tracks to saved tracks. Yay! 🎉")
+    logger.success(f"Added {num_added} tracks to saved tracks. Yay! 🎉")
     logger.info(f"Took {duration} to run.")
     if dry_run:
         logger.warning("Dry Run: no tracks added.")

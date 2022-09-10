@@ -4,7 +4,6 @@ import sys
 from dataclasses import dataclass
 from typing import Dict
 from typing import List
-from typing import Optional
 
 import click
 import loguru
@@ -55,7 +54,6 @@ class Track:
     name: str
     href: str
     track_number: int
-    album: Optional[Album] = None
 
     def __str__(self):
         return f"Track('{self.name}')"
@@ -65,10 +63,6 @@ class Track:
 
     @classmethod
     def from_result(cls, data: Dict) -> Track:
-        album = data.get("album", None)
-        if album:
-            album = Album.from_result(data["album"])
-
         return cls(
             spotify_id=data["id"],
             duration_ms=data["duration_ms"],
@@ -90,7 +84,7 @@ class Album:
     href: str
     release_date: str
     release_date_precision: str
-    tracks: Optional[List[Track]] = None
+    tracks: List[Track]
 
     def __str__(self):
         return f"Album('{self.name}')"
@@ -100,9 +94,7 @@ class Album:
 
     @classmethod
     def from_result(cls, data: Dict) -> Album:
-        tracks = data.get("tracks", None)
-        if tracks:
-            tracks = [Track.from_result(t) for t in tracks["items"]]
+        tracks = [Track.from_result(t) for t in data["tracks"]["items"]]
 
         return cls(
             spotify_id=data["id"],

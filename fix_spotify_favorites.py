@@ -5,6 +5,7 @@ import urllib.parse
 from dataclasses import dataclass
 from typing import Dict
 from typing import List
+from typing import Tuple
 
 import click
 import loguru
@@ -156,20 +157,29 @@ def main(dry_run: bool = True) -> None:
     scope = "user-library-read"
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
 
+    added_tracks: List[Tuple[Track, Album]] = []
+
     albums = get_all_saved_albums(sp)
 
     for album in albums:
-        logger.trace(f"Processing {album}")
+        logger.debug(f"Processing {album}")
 
         for track in album.tracks:
+            logger.trace(f"Processing {track}")
 
             # only checking 1 track at a time.
             if not sp.current_user_saved_tracks_contains([track.uri])[0]:
                 if track.uri not in track_blocklist:
 
                     logger.info(f"Adding {track} from {album} to saved tracks.")
+                    added_tracks.append((track, album))
                     if not dry_run:
                         sp.current_user_saved_tracks_add(track)
+
+    num_added = len(added_tracks)
+    logger.info(f"Added {num_added} tracks to saved tracks. Yay! 🎉")
+    if dry_run:
+        logger.warning("Dry Run: no tracks added.")
 
 
 def _example():

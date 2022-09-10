@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import itertools
 import sys
 import urllib.parse
 from dataclasses import dataclass
@@ -167,20 +168,28 @@ def main(dry_run: bool = True) -> None:
 
     albums = get_all_saved_albums(sp)
 
-    for album in albums:
-        logger.debug(f"Processing {album}")
+    for n, album in enumerate(albums):
+        logger.debug(f"Processing album {n} of {len(albums)}: {album}")
+        tracks = album.tracks
 
-        for track in album.tracks:
-            logger.trace(f"Processing {track}")
+        track_uris: List[str] = [track.uri for track in tracks]
+        already_liked: List[bool] = sp.current_user_saved_tracks_contains(track_uris)
+        # [a, b, c] + [True, True, False] => [c]
+        need_to_add: List[Track] = list(
+            itertools.compress(tracks, (not liked for liked in already_liked))
+        )
 
-            # only checking 1 track at a time.
-            if not sp.current_user_saved_tracks_contains([track.uri])[0]:
-                if track.uri not in track_blocklist:
+        if need_to_add:
+            logger.info(
+                f"Adding {len(need_to_add)} tracks from {album} to saved"
+                f" tracks: {need_to_add}"
+            )
+        else:
+            logger.trace(f"All tracks from {album} are already 'liked'.")
 
-                    logger.info(f"Adding {track} from {album} to saved tracks.")
-                    added_tracks.append((track, album))
-                    if not dry_run:
-                        sp.current_user_saved_tracks_add(track)
+        added_tracks.extend([(track, album) for track in need_to_add])
+        if not dry_run:
+            sp.curren_user_saved_tracks_add([t.uri for t in need_to_add])
 
     end_time = dt.datetime.utcnow()
     duration = end_time - start_time

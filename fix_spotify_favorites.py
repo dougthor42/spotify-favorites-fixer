@@ -4,6 +4,7 @@ import datetime as dt
 import sys
 import urllib.parse
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict
 from typing import List
 from typing import Tuple
@@ -15,6 +16,7 @@ from loguru import logger
 from spotipy.oauth2 import SpotifyOAuth
 
 track_blocklist: List[str] = []
+LOG_FILE = Path(__file__).parent / "fix-spotify-favorites.log"
 
 
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
@@ -44,7 +46,8 @@ def setup_logging(logger: loguru.Logger, verbose: int):
 
     logger.remove()
     logger.add(sys.stderr, level=levels[verbose])
-    logger.info(f"Verbosity set to {verbose} ({levels[verbose]}).")
+    logger.add(LOG_FILE, level="TRACE")
+    logger.info(f"Console verbosity set to {verbose} ({levels[verbose]}).")
 
 
 # Some helper classes to make accessors easier.

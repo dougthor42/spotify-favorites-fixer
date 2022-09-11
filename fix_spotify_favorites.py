@@ -262,7 +262,10 @@ def main(
     end_time = dt.datetime.utcnow()
     duration = end_time - start_time
     num_added = len(added_tracks)
-    logger.success(f"Added {num_added} tracks to saved tracks. Yay! 🎉")
+    if num_added:
+        logger.success(f"Added {num_added} tracks to saved tracks. Yay! 🎉")
+    else:
+        logger.success("No tracks to add - everything's up to date! ✨")
     logger.info(f"Took {duration} to run.")
 
     if dry_run:

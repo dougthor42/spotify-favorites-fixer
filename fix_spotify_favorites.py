@@ -38,12 +38,12 @@ LOG_FILE = Path(__file__).parent / "fix-spotify-favorites.log"
     default=SKIPLIST_PATH,
     help="The file containing skiplisted track IDs. See README for required format.",
 )
-def cli(verbose: int, dry_run: bool, skiplist_file: Path):
+def cli(verbose: int, dry_run: bool, skiplist_file: Path) -> None:
     setup_logging(logger, verbose)
     main(dry_run=dry_run, skiplist_file=skiplist_file)
 
 
-def setup_logging(logger: loguru.Logger, verbose: int):
+def setup_logging(logger: loguru.Logger, verbose: int) -> None:
     levels = {
         0: "SUCCESS",
         1: "INFO",
@@ -73,10 +73,10 @@ class Track:
     track_number: int
     _data: Dict[str, Any]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Track('{self.name}')"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
 
     @classmethod
@@ -107,10 +107,10 @@ class Album:
     tracks: List[Track]
     _data: Dict[str, Any]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Album({self.artist_name}: '{self.name}')"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
 
     @classmethod

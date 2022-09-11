@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import datetime as dt
 import itertools
 import sys
@@ -8,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict
 from typing import List
+from typing import Set
 
 import click
 import loguru
@@ -120,6 +122,15 @@ class Album:
 class AddedTrack:
     track: Track
     album: Album
+
+
+def read_skiplist_file(path: Path) -> Set[str]:
+    skipped_ids: List[str] = []
+    with path.open("r", newline="") as openf:
+        reader = csv.DictReader(openf)
+        for row in reader:
+            skipped_ids.append(row["spotify_id"])
+    return set(skipped_ids)
 
 
 def get_all_saved_albums(sp: spotipy.Spotipy) -> List[Album]:

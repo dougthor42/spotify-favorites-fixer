@@ -214,7 +214,9 @@ def main(
     skiplist = read_skiplist_file(skiplist_file)
 
     # Create our client
-    scope = "user-library-read" if dry_run else "user-library-modify"
+    scope = ["user-library-read"]
+    if not dry_run:
+        scope.append("user-library-modify")
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
 
     added_tracks: List[AddedTrack] = []

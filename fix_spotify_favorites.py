@@ -176,7 +176,9 @@ def get_all_saved_albums(sp: spotipy.Spotipy) -> List[Album]:
     return albums
 
 
-def main(dry_run: bool = True, skiplist_file: Optional[Path] = None) -> None:
+def main(
+    dry_run: bool = True, skiplist_file: Optional[Path] = None
+) -> List[AddedTrack]:
     logger.success(f"Starting. {dry_run=}")
     start_time = dt.datetime.utcnow()
 
@@ -200,6 +202,7 @@ def main(dry_run: bool = True, skiplist_file: Optional[Path] = None) -> None:
 
         track_uris: List[str] = [track.uri for track in tracks]
         already_liked: List[bool] = sp.current_user_saved_tracks_contains(track_uris)
+
         # [a, b, c] + [True, True, False] => [c]
         need_to_add: List[Track] = list(
             itertools.compress(tracks, (not liked for liked in already_liked))
@@ -243,6 +246,8 @@ def main(dry_run: bool = True, skiplist_file: Optional[Path] = None) -> None:
     logger.info(f"Took {duration} to run.")
     if dry_run:
         logger.warning("Dry Run: no tracks added.")
+
+    return added_tracks
 
 
 def _example():

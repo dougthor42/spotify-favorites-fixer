@@ -17,6 +17,7 @@ def test_Track_from_result():
     }
     got = fix.Track.from_result(data)
     assert isinstance(got, fix.Track)
+    assert got._data == data
 
 
 @pytest.mark.parametrize(

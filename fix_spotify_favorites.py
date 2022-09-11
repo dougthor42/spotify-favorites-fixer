@@ -7,6 +7,7 @@ import sys
 import urllib.parse
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -70,6 +71,7 @@ class Track:
     name: str
     href: str
     track_number: int
+    _data: Dict[str, Any]
 
     def __str__(self):
         return f"Track('{self.name}')"
@@ -87,6 +89,7 @@ class Track:
             name=data["name"],
             href=data["href"],
             track_number=data["track_number"],
+            _data=data,
         )
 
 
@@ -102,6 +105,7 @@ class Album:
     release_date_precision: str
     artist_name: str
     tracks: List[Track]
+    _data: Dict[str, Any]
 
     def __str__(self):
         return f"Album({self.artist_name}: '{self.name}')"
@@ -123,6 +127,7 @@ class Album:
             release_date_precision=data["release_date_precision"],
             artist_name=",".join(art["name"] for art in data["artists"]),
             tracks=tracks,
+            _data=data,
         )
 
 

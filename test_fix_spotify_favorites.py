@@ -1,4 +1,6 @@
 from pathlib import Path
+from typing import Optional
+from typing import Set
 
 import pytest
 
@@ -42,6 +44,20 @@ def test_Album_from_result():
 
 
 @pytest.mark.parametrize(
+    "path, want",
+    [
+        (None, set()),
+        (Path("foo.csv"), set()),
+        (Path(__file__), {"foo", "bar"}),
+    ],
+)
+def test_read_skiplist_file(path: Optional[Path], want: Set[str], monkeypatch):
+    monkeypatch.setattr(fix, "parse_skiplist_file", lambda _: want)
+    got = fix.read_skiplist_file(path)
+    assert got == want
+
+
+@pytest.mark.parametrize(
     "fake_data, want",
     [
         ("spotify_id,album\nfoo,bar" "", {"foo"}),
@@ -51,10 +67,10 @@ def test_Album_from_result():
         ("spotify_id\r\nfoo", {"foo"}),
     ],
 )
-def test_read_skiplist_file(fake_data: str, want: str, tmp_path: Path):
+def test_parse_skiplist_file(fake_data: str, want: str, tmp_path: Path):
     # Create the fake skiplist file.
     path = tmp_path / "skiplist.csv"
     path.write_text(fake_data)
 
-    got = fix.read_skiplist_file(path)
+    got = fix.parse_skiplist_file(path)
     assert got == want

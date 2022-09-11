@@ -137,13 +137,24 @@ class AddedTrack:
     album: Album
 
 
-def read_skiplist_file(path: Path) -> Set[str]:
+def parse_skiplist_file(path: Path) -> Set[str]:
     skipped_ids: List[str] = []
     with path.open("r", newline="") as openf:
         reader = csv.DictReader(openf)
         for row in reader:
             skipped_ids.append(row["spotify_id"])
     return set(skipped_ids)
+
+
+def read_skiplist_file(path: Optional[Path]) -> Set[str]:
+    """Read the skiplist file, if given and present."""
+    skiplist: Set[str] = set()
+    if path is None or not path.exists():
+        logger.warning(f"Skiplist file '{path}' does not exist or was not given.")
+    else:
+        skiplist = parse_skiplist_file(path)
+
+    return skiplist
 
 
 def get_all_saved_albums(sp: spotipy.Spotipy) -> List[Album]:
@@ -200,13 +211,7 @@ def main(
     logger.success(f"Starting. {dry_run=}, {skiplist_file=}")
     start_time = dt.datetime.utcnow()
 
-    skiplist: Set[str] = set()
-    if skiplist_file is None or not skiplist_file.exists():
-        logger.warning(
-            f"Skiplist file '{skiplist_file}' does not exist or was not given."
-        )
-    else:
-        skiplist = read_skiplist_file(skiplist_file)
+    skiplist = read_skiplist_file(skiplist_file)
 
     # Create our client
     scope = "user-library-read"
@@ -251,11 +256,13 @@ def main(
         if not dry_run:
             sp.curren_user_saved_tracks_add([t.uri for t in need_to_add])
 
+    # Extra logging info
     end_time = dt.datetime.utcnow()
     duration = end_time - start_time
     num_added = len(added_tracks)
     logger.success(f"Added {num_added} tracks to saved tracks. Yay! 🎉")
     logger.info(f"Took {duration} to run.")
+
     if dry_run:
         logger.warning("Dry Run: no tracks added.")
 

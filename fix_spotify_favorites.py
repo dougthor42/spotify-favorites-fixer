@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Set
 
 import click
@@ -17,7 +18,7 @@ import spotipy
 from loguru import logger
 from spotipy.oauth2 import SpotifyOAuth
 
-track_blocklist: List[str] = []
+SKIPLIST_PATH = Path(__file__).parent / "skiplist.csv"
 LOG_FILE = Path(__file__).parent / "fix-spotify-favorites.log"
 
 
@@ -29,9 +30,16 @@ LOG_FILE = Path(__file__).parent / "fix-spotify-favorites.log"
     count=True,
     help="Increase printed messages. Can be provided multiple times.",
 )
-def cli(verbose: int, dry_run: bool):
+@click.option(
+    "-s",
+    "--skiplist-file",
+    type=click.Path(exists=False, dir_okay=False),
+    default=SKIPLIST_PATH,
+    help="The file containing skiplisted track IDs. See README for required format.",
+)
+def cli(verbose: int, dry_run: bool, skiplist_file: Path):
     setup_logging(logger, verbose)
-    main(dry_run=dry_run)
+    main(dry_run=dry_run, skiplist_file=skiplist_file)
 
 
 def setup_logging(logger: loguru.Logger, verbose: int):
@@ -168,7 +176,7 @@ def get_all_saved_albums(sp: spotipy.Spotipy) -> List[Album]:
     return albums
 
 
-def main(dry_run: bool = True) -> None:
+def main(dry_run: bool = True, skiplist_file: Optional[Path] = None) -> None:
     logger.success(f"Starting. {dry_run=}")
     start_time = dt.datetime.utcnow()
     # Create our client

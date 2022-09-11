@@ -179,6 +179,13 @@ def get_all_saved_albums(sp: spotipy.Spotipy) -> List[Album]:
 def main(dry_run: bool = True, skiplist_file: Optional[Path] = None) -> None:
     logger.success(f"Starting. {dry_run=}")
     start_time = dt.datetime.utcnow()
+
+    skiplist: Set[str] = set()
+    if skiplist_file is None or not skiplist_file.exists():
+        logger.info(f"Skiplist file {skiplist_file} does not exist or was not given.")
+    else:
+        skiplist = read_skiplist_file(skiplist_file)
+
     # Create our client
     scope = "user-library-read"
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
@@ -200,6 +207,24 @@ def main(dry_run: bool = True, skiplist_file: Optional[Path] = None) -> None:
 
         if not need_to_add:
             logger.trace(f"All tracks from {album} are already 'liked'.")
+            continue
+
+        # Remove any skiplisted tracks.
+        # Note that we iterate over a *copy* of the list so that we can modify it.
+        original_need_to_add = need_to_add[:]
+        for track in need_to_add[:]:
+            if track.spotify_id in skiplist:
+                need_to_add.remove(track)
+                logger.warning(
+                    f"Skipping {track} from {album} because it's in the skiplist file."
+                )
+
+        if not need_to_add:
+            logger.warning(
+                f"All {len(original_need_to_add)} potential tracks from {album}"
+                " that could be added to the 'Saved Tracks' list are present"
+                " in the skiplist file. Nothing to do."
+            )
             continue
 
         logger.info(

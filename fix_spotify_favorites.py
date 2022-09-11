@@ -255,21 +255,5 @@ def main(
     return added_tracks
 
 
-def _example():
-    scope = "user-library-read"
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
-
-    results = sp.current_user_saved_tracks(limit=50)
-    track_names = [t["track"]["name"] for t in results["items"]]
-    while results["next"]:
-        logger.info(results["next"])
-        results = sp.next(results)
-        track_names.extend([t["track"]["name"] for t in results["items"]])
-
-    print(len(track_names))
-    print(track_names[:10])
-    return track_names
-
-
 if __name__ == "__main__":
     cli()

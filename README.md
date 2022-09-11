@@ -66,6 +66,48 @@ Authorization will last for... some amount of time. Maybe a day? I donno,
 I haven't tested yet. During the active auth period, re-running the program
 will _not_ pop up the browser window.
 
+### CLI
+
+View the CLI args/help with `python fix_spotify_favorites.py --help`.
+
+
+### Skiplisting Tracks
+
+Sometimes there are tracks that you intentionally "un-like". These can be
+added to a file and then `fix_spotify_favorites` will not re-like it.
+
+The skiplist file is a CSV file (named "skiplist.csv" by default). The file
+**must** have the following properties:
+
++ column names on row 1
++ have a column called `spotify_id` which is the ID of the track to skip
++ use commas as a column delimiter (if multitple columns are present)
+
+All other columns, along with ordering, are ignored so you can use them for
+your own notes or whatever.
+
+For example, these are all valid and equivalent skiplist files.
+```csv
+spotify_id,artist,track
+6DZLcTwul48FE4aW0xSxbl,Sublime,Raleigh Soliloquy Pt. I
+62oXSkYi2CJAz1hoJAvGN0,Sublime,Raleigh Soliloquy Pt. II
+3ZBUmaRN1hitj5L0pJTifL,Wicked,No Good Deed (German)
+```
+
+```csv
+reason,spotify_id,track
+"Foo",6DZLcTwul48FE4aW0xSxbl,"Trackname 1"
+"Bar",62oXSkYi2CJAz1hoJAvGN0,"Raleigh Soliloquy Pt. II"
+"It's in German, man.",3ZBUmaRN1hitj5L0pJTifL,No Good Deed
+```
+
+```csv
+spotify_id
+6DZLcTwul48FE4aW0xSxbl
+62oXSkYi2CJAz1hoJAvGN0
+3ZBUmaRN1hitj5L0pJTifL
+```
+
 
 ## Other
 

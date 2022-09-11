@@ -206,7 +206,7 @@ def filter_tracks_to_add(sp: spotipy.Spotify, tracks: List[Track]) -> List[Track
 
 
 def main(
-    dry_run: bool = True, skiplist_file: Optional[Path] = None
+    dry_run: bool = False, skiplist_file: Optional[Path] = None
 ) -> List[AddedTrack]:
     logger.success(f"Starting. {dry_run=}, {skiplist_file=}")
     start_time = dt.datetime.utcnow()
@@ -214,7 +214,7 @@ def main(
     skiplist = read_skiplist_file(skiplist_file)
 
     # Create our client
-    scope = "user-library-read"
+    scope = "user-library-read" if dry_run else "user-library-modify"
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
 
     added_tracks: List[AddedTrack] = []
@@ -254,7 +254,7 @@ def main(
         added_tracks.extend([AddedTrack(track, album) for track in need_to_add])
 
         if not dry_run:
-            sp.curren_user_saved_tracks_add([t.uri for t in need_to_add])
+            sp.current_user_saved_tracks_add([t.uri for t in need_to_add])
 
     # Extra logging info
     end_time = dt.datetime.utcnow()

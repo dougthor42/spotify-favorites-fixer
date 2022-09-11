@@ -34,7 +34,7 @@ LOG_FILE = Path(__file__).parent / "fix-spotify-favorites.log"
 @click.option(
     "-s",
     "--skiplist-file",
-    type=click.Path(exists=False, dir_okay=False),
+    type=click.Path(exists=False, dir_okay=False, path_type=Path),
     default=SKIPLIST_PATH,
     help="The file containing skiplisted track IDs. See README for required format.",
 )
@@ -189,7 +189,9 @@ def main(
 
     skiplist: Set[str] = set()
     if skiplist_file is None or not skiplist_file.exists():
-        logger.info(f"Skiplist file {skiplist_file} does not exist or was not given.")
+        logger.warning(
+            f"Skiplist file '{skiplist_file}' does not exist or was not given."
+        )
     else:
         skiplist = read_skiplist_file(skiplist_file)
 

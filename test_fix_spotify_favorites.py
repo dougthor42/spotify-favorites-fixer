@@ -4,20 +4,41 @@ import pytest
 
 import fix_spotify_favorites as fix
 
+_fake_track = {
+    "id": "foo",
+    "duration_ms": 5,
+    "explicit": True,
+    "uri": "bar",
+    "name": "Track Name",
+    "href": "https://foo",
+    "track_number": 4,
+}
+
 
 def test_Track_from_result():
+    got = fix.Track.from_result(_fake_track)
+    assert isinstance(got, fix.Track)
+    assert got._data == _fake_track
+    assert got.uri == "bar"
+
+
+def test_Album_from_result():
     data = {
         "id": "foo",
-        "duration_ms": 5,
-        "explicit": True,
         "uri": "bar",
-        "name": "Track Name",
+        "name": "An Album Cover",
+        "album_type": "album",
         "href": "https://foo",
-        "track_number": 4,
+        "release_date": "2022-04-01",
+        "release_date_precision": "day",
+        "artists": [{"name": "Weird Al"}, {"name": "Tenacious D"}],
+        "tracks": {"items": [_fake_track, _fake_track]},
     }
-    got = fix.Track.from_result(data)
-    assert isinstance(got, fix.Track)
+    got = fix.Album.from_result(data)
+    assert isinstance(got, fix.Album)
     assert got._data == data
+    assert len(got.tracks) == 2
+    assert got.artist_name == "Weird Al,Tenacious D"
 
 
 @pytest.mark.parametrize(

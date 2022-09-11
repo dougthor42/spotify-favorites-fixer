@@ -44,7 +44,7 @@ def cli(verbose: int, dry_run: bool, skiplist_file: Path):
 
 def setup_logging(logger: loguru.Logger, verbose: int):
     levels = {
-        0: "WARNING",
+        0: "SUCCESS",
         1: "INFO",
         2: "DEBUG",
         3: "TRACE",
@@ -172,14 +172,14 @@ def get_all_saved_albums(sp: spotipy.Spotipy) -> List[Album]:
         raise ValueError(
             f"Retrived total {actual_total} does not match expected {expected_total}"
         )
-    logger.debug(f"Found {actual_total} saved albums")
+    logger.success(f"Found {actual_total} saved albums")
     return albums
 
 
 def main(
     dry_run: bool = True, skiplist_file: Optional[Path] = None
 ) -> List[AddedTrack]:
-    logger.success(f"Starting. {dry_run=}")
+    logger.success(f"Starting. {dry_run=}, {skiplist_file=}")
     start_time = dt.datetime.utcnow()
 
     skiplist: Set[str] = set()
@@ -223,7 +223,7 @@ def main(
                 )
 
         if not need_to_add:
-            logger.warning(
+            logger.info(
                 f"All {len(original_need_to_add)} potential tracks from {album}"
                 " that could be added to the 'Saved Tracks' list are present"
                 " in the skiplist file. Nothing to do."

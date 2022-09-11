@@ -59,12 +59,15 @@ If you've done [Settings Things Up](#setting-things-up) and
 python fix_spotify_favorites.py
 ```
 
+> ❗ It's recommended to run with `-n/--dry-run` first!
+
 A browser window will pop up asking for authorization to access your data.
 Give it the A-OK and the script will do its thing.
 
 Authorization will last for... some amount of time. Maybe a day? I donno,
 I haven't tested yet. During the active auth period, re-running the program
 will _not_ pop up the browser window.
+
 
 ### CLI
 

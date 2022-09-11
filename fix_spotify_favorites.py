@@ -20,7 +20,7 @@ from loguru import logger
 from spotipy.oauth2 import SpotifyOAuth
 
 SKIPLIST_PATH = Path(__file__).parent / "skiplist.csv"
-LOG_FILE = Path(__file__).parent / "fix-spotify-favorites.log"
+LOG_FILE = Path(__file__).parent / "log" / "fix-spotify-favorites_{time}.log"
 
 
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})

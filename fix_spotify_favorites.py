@@ -181,6 +181,19 @@ def get_all_saved_albums(sp: spotipy.Spotipy) -> List[Album]:
     return albums
 
 
+def filter_tracks_to_add(sp: spotipy.Spotify, tracks: List[Track]) -> List[Track]:
+    """Remove any tracks that the user has already 'liked'."""
+    track_uris: List[str] = [track.uri for track in tracks]
+    already_liked: List[bool] = sp.current_user_saved_tracks_contains(track_uris)
+
+    # [a, b, c] + [True, True, False] => [c]
+    need_to_add: List[Track] = list(
+        itertools.compress(tracks, (not liked for liked in already_liked))
+    )
+
+    return need_to_add
+
+
 def main(
     dry_run: bool = True, skiplist_file: Optional[Path] = None
 ) -> List[AddedTrack]:
@@ -202,19 +215,11 @@ def main(
     added_tracks: List[AddedTrack] = []
 
     albums = get_all_saved_albums(sp)
-
     for n, album in enumerate(albums):
         logger.debug(f"Processing album {n} of {len(albums)}: {album}")
         tracks = album.tracks
 
-        track_uris: List[str] = [track.uri for track in tracks]
-        already_liked: List[bool] = sp.current_user_saved_tracks_contains(track_uris)
-
-        # [a, b, c] + [True, True, False] => [c]
-        need_to_add: List[Track] = list(
-            itertools.compress(tracks, (not liked for liked in already_liked))
-        )
-
+        need_to_add = filter_tracks_to_add(sp, tracks)
         if not need_to_add:
             logger.trace(f"All tracks from {album} are already 'liked'.")
             continue

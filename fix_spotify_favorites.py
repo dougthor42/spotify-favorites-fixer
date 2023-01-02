@@ -74,7 +74,7 @@ class Track:
     _data: Dict[str, Any]
 
     def __str__(self) -> str:
-        return f"Track('{self.name}')"
+        return f"Track('{self.spotify_id}: {self.name}')"
 
     def __repr__(self) -> str:
         return str(self)
@@ -249,7 +249,7 @@ def main(
             )
             continue
 
-        logger.info(
+        logger.success(
             f"Adding {len(need_to_add)} tracks from {album} to saved"
             f" tracks: {need_to_add}"
         )

@@ -1,6 +1,10 @@
 # Changelog
 
 
+## Unreleased
++ Switched from `flake8` to `ruff` for linting. (#2)
+
+
 ## v0.4.0 (2022-09-10)
 + Initial public release!
 + CLI supports `-n/--dry-run`, verbosity levels, and specifying a custom

@@ -3,6 +3,7 @@
 
 ## Unreleased
 + Switched from `flake8` to `ruff` for linting. (#2)
++ Added CI. (#3)
 
 
 ## v0.4.0 (2022-09-10)

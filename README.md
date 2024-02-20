@@ -69,6 +69,21 @@ I haven't tested yet. During the active auth period, re-running the program
 will _not_ pop up the browser window.
 
 
+### Errors
+
+#### Refresh Token Revoked
+
+If you get
+
+```
+spotipy.oauth2.SpotifyOauthError: error: invalid_grant, error_description: Refresh token revoked
+```
+
+then you might have changed your Spotify password since you last ran this program.
+
+Delete `./.cache` and try again.
+
+
 ### CLI
 
 View the CLI args/help with `python fix_spotify_favorites.py --help`.

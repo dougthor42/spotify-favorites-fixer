@@ -22,6 +22,8 @@ from spotipy.oauth2 import SpotifyOAuth
 SKIPLIST_PATH = Path(__file__).parent / "skiplist.csv"
 LOG_FILE = Path(__file__).parent / "log" / "fix-spotify-favorites_{time}.log"
 
+TSV_HEADERS = ["artist", "album", "track", "track_num"]
+
 
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option("-n", "--dry-run", is_flag=True, help="Do not update 'Liked' songs.")
@@ -38,9 +40,15 @@ LOG_FILE = Path(__file__).parent / "log" / "fix-spotify-favorites_{time}.log"
     default=SKIPLIST_PATH,
     help="The file containing skiplisted track IDs. See README for required format.",
 )
-def cli(verbose: int, dry_run: bool, skiplist_file: Path) -> None:
+@click.option(
+    "--save-tsv",
+    is_flag=True,
+    default=False,
+    help="Save a tsv file of all 'Liked' tracks to ./tracks.tsv",
+)
+def cli(verbose: int, dry_run: bool, skiplist_file: Path, save_tsv: bool) -> None:
     setup_logging(logger, verbose)
-    main(dry_run=dry_run, skiplist_file=skiplist_file)
+    main(dry_run=dry_run, skiplist_file=skiplist_file, save_tsv=save_tsv)
 
 
 def setup_logging(logger: loguru.Logger, verbose: int) -> None:
@@ -206,7 +214,9 @@ def filter_tracks_to_add(sp: spotipy.Spotify, tracks: List[Track]) -> List[Track
 
 
 def main(
-    dry_run: bool = False, skiplist_file: Optional[Path] = None
+    dry_run: bool = False,
+    skiplist_file: Optional[Path] = None,
+    save_tsv: bool = False,
 ) -> List[AddedTrack]:
     logger.success(f"Starting. {dry_run=}, {skiplist_file=}")
     start_time = dt.datetime.utcnow()
@@ -221,10 +231,34 @@ def main(
 
     added_tracks: List[AddedTrack] = []
 
+    tsv_file = Path(__file__).parent / "tracks.tsv"
+    if save_tsv:
+        # Clear it out and make headers
+        # Not using DictWriter for headers because this is simpler
+        tsv_file.write_text("\t".join(TSV_HEADERS) + "\n")
+
     albums = get_all_saved_albums(sp)
     for n, album in enumerate(albums):
         logger.debug(f"Processing album {n} of {len(albums)}: {album}")
         tracks = album.tracks
+
+        if save_tsv:
+            with open(tsv_file, "a", newline="") as openf:
+                tsv_writer = csv.DictWriter(
+                    openf,
+                    fieldnames=TSV_HEADERS,
+                    delimiter="\t",
+                    lineterminator="\n",
+                )
+                for track in tracks:
+                    tsv_writer.writerow(
+                        {
+                            "artist": album.artist_name,
+                            "album": album.name,
+                            "track": track.name,
+                            "track_num": track.track_number,
+                        }
+                    )
 
         need_to_add = filter_tracks_to_add(sp, tracks)
         if not need_to_add:
@@ -270,6 +304,9 @@ def main(
 
     if dry_run:
         logger.warning("Dry Run: no tracks added.")
+
+    if save_tsv:
+        logger.success(f"Saved all tracks to {tsv_file}")
 
     return added_tracks
 

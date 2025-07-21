@@ -189,3 +189,7 @@ tags
 # Secrets
 secrets.json
 secrets.sh
+
+# Other stuff like data files.
+tracks.tsv
+skiplist.csv
